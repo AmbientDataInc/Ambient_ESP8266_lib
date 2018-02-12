@@ -35,9 +35,9 @@ private:
      int16_t dig_P7;
      int16_t dig_P8;
      int16_t dig_P9;
-     int8_t  dig_H1;
+     uint8_t  dig_H1;
      int16_t dig_H2;
-     int8_t  dig_H3;
+     uint8_t  dig_H3;
      int16_t dig_H4;
      int16_t dig_H5;
      int8_t  dig_H6;
