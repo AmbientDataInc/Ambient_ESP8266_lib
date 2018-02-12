@@ -10,9 +10,11 @@ public:
 
   virtual ~MCP3002();
 
-  void begin(void);
+  void begin(int cs);
 
   int readData(int ch);
+private:
+  int mcp3002_cs;
 };
 
 #endif // MCP3002_H

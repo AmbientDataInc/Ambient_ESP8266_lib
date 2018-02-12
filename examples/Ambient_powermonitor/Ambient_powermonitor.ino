@@ -89,7 +89,7 @@ void setup() {
     
   ambient.begin(channelId, writeKey, &client);
 
-  mcp3002.begin();
+  mcp3002.begin(15);
 
   t1flag = 0;
   t1.attach(PERIOD, t1callback);
