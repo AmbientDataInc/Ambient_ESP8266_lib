@@ -1,6 +1,6 @@
 # Ambient_ESP8266_lib
 
-[Ambient](https://ambidata.io)はIoTクラウドサービスです。 マイコンから送られたデーターを受信し、蓄積し、可視化(グラフ化)します。
+[Ambient](https://ambidata.io)はIoTデーターの可視化サービスです。 マイコンから送られたデーターを受信し、蓄積し、可視化(グラフ化)します。
 
 ![Ambient structure](https://ambidata.io/wp/wp-content/uploads/2016/09/AmbientStructure.jpg)
 
@@ -8,7 +8,7 @@ Ambientにユーザー登録(無料)し、マイコンからデーターを送�
 
 ![Ambient chart](https://ambidata.io/wp/wp-content/uploads/2016/09/fig3-1024x651.jpg)
 
-ここではArduino ESP8266用のライブラリーとサンプルを示しています。サンプルには次のプログラムがあります。
+ここではArduino ESP8266/ESP32用のライブラリーとサンプルを示しています。サンプルには次のプログラムがあります。
 
 * 環境モニター(examples/Ambient_ESP8266): ESP8266と温度・湿度センサーのHDC1000を使い、温度、湿度を測定し、Ambientに送信してモニターします。解説を[「Arduino ESP8266で温度・湿度を測定し、Ambientに送ってグラフ化する」](https://ambidata.io/docs/esp8266/)に書きました。
 * 心拍モニター(examples/Ambient_HeartBeat): ESP8266と心拍センサーを使い、心拍波形をグラフ化します。解説を[「ESP8266と心拍センサーとAmbientで心拍波形をモニターする」](https://ambidata.io/examples/heartbeat/)に書きました。
