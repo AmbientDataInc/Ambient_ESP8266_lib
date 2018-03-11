@@ -6,7 +6,11 @@
 #define Ambient_h
 
 #include "Arduino.h"
-#include <ESP8266WiFi.h>
+#if defined(ESP8266)
+ #include <ESP8266WiFi.h>
+#else
+ #include <WiFi.h>
+#endif
 
 #define AMBIENT_WRITEKEY_SIZE 18
 #define AMBIENT_MAX_RETRY 5
