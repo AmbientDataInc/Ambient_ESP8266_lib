@@ -1,4 +1,4 @@
-# Ambient_ESP8266_lib
+# ESP8266/ESP32用Arduino・Ambientライブラリー
 
 [Ambient](https://ambidata.io)はIoTデーターの可視化サービスです。 マイコンから送られたデーターを受信し、蓄積し、可視化(グラフ化)します。
 
