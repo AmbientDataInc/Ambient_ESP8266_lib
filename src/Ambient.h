@@ -33,6 +33,7 @@ public:
     bool send(void);
     int bulk_send(char * buf);
     bool delete_data(const char * userKey);
+    bool getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, WiFiClient * c, int dev = 0);
 
 private:
 

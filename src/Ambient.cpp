@@ -14,9 +14,10 @@
 #define ERR(...)
 #endif /* AMBIENT_DBG */
 
-const char* AMBIENT_HOST = "54.65.206.59";
+// const char* AMBIENT_HOST = "54.65.206.59";
+const char* AMBIENT_HOST = "ambidata.io";
 int AMBIENT_PORT = 80;
-const char* AMBIENT_HOST_DEV = "192.168.0.11";
+const char* AMBIENT_HOST_DEV = "192.168.11.7";
 int AMBIENT_PORT_DEV = 4567;
 
 const char * ambient_keys[] = {"\"d1\":\"", "\"d2\":\"", "\"d3\":\"", "\"d4\":\"", "\"d5\":\"", "\"d6\":\"", "\"d7\":\"", "\"d8\":\"", "\"lat\":\"", "\"lng\":\"", "\"created\":\""};
@@ -50,7 +51,7 @@ Ambient::begin(unsigned int channelId, const char * writeKey, WiFiClient * c, in
     for (int i = 0; i < AMBIENT_NUM_PARAMS; i++) {
         this->data[i].set = false;
     }
-        return true;
+    return true;
 }
 
 bool
@@ -91,7 +92,6 @@ Ambient::clear(int field) {
 
 bool
 Ambient::send() {
-
     int retry;
     for (retry = 0; retry < AMBIENT_MAX_RETRY; retry++) {
         int ret;
@@ -291,6 +291,83 @@ Ambient::delete_data(const char * userKey) {
     for (int i = 0; i < AMBIENT_NUM_PARAMS; i++) {
         this->data[i].set = false;
     }
+
+    return true;
+}
+
+bool
+Ambient::getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, WiFiClient * c, int dev) {
+    if(NULL == c) {
+        ERR("Socket Pointer is NULL, open a socket.");
+        return false;
+    }
+    this->client = c;
+    this->dev = dev;
+    if (dev) {
+        strcpy(this->host, AMBIENT_HOST_DEV);
+        this->port = AMBIENT_PORT_DEV;
+    } else {
+        strcpy(this->host, AMBIENT_HOST);
+        this->port = AMBIENT_PORT;
+    }
+
+    int retry;
+    for (retry = 0; retry < AMBIENT_MAX_RETRY; retry++) {
+        int ret;
+        ret = this->client->connect(this->host, this->port);
+        if (ret) {
+            break ;
+        }
+    }
+    if(retry == AMBIENT_MAX_RETRY) {
+        ERR("Could not connect socket to host\r\n");
+        return false;
+    }
+
+    char str[1024];
+    char inChar;
+
+    memset(str, 0, sizeof(str));
+    sprintf(str, "GET /api/v2/channels/?userKey=%s&devKey=%s HTTP/1.1\r\n", userKey, devKey);
+    if (this->port == 80) {
+        sprintf(&str[strlen(str)], "Host: %s\r\n", this->host);
+    } else {
+        sprintf(&str[strlen(str)], "Host: %s:%d\r\n", this->host, this->port);
+    }
+    sprintf(&str[strlen(str)], "Content-Type: application/json\r\n\r\n");
+    DBG(str);
+
+    int ret;
+    ret = this->client->print(str);
+    delay(30);
+    DBG(ret);DBG(" bytes sent\r\n");
+    if (ret == 0) {
+        ERR("send failed\r\n");
+        return false;
+    }
+
+    if (! this->client->findUntil("200", "\n")) {
+        while (this->client->available()) {
+            this->client->readStringUntil('\n');
+        }
+        return false;
+    }
+    while (this->client->available()) {
+        String buf = this->client->readStringUntil('\n');
+        if (buf.length() == 1)
+            break;
+    }
+    String buf = this->client->readStringUntil('\n');
+
+    int from, to;
+    from = buf.indexOf("\"ch\":\"") + strlen("\"ch\":\"");
+    to = buf.indexOf("\",", from);
+    channelId = buf.substring(from, to).toInt();
+    from = buf.indexOf("\"writeKey\":\"") + strlen("\"writeKey\":\"");
+    to = buf.indexOf("\",", from);
+    buf.substring(from, to).toCharArray(writeKey, len);
+
+    this->client->stop();
 
     return true;
 }

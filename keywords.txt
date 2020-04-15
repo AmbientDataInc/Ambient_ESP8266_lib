@@ -5,3 +5,4 @@ clear	KEYWORD2
 send	KEYWORD2
 bulk_send	KEYWORD2
 delete_data	KEYWORD2
+getchannel	KEYWORD2
