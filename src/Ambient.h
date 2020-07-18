@@ -30,7 +30,7 @@ public:
 	bool set(int field, int data);
     bool clear(int field);
 
-    bool send(void);
+    bool send( uint32_t tmout = 5000UL );
     int bulk_send(char * buf);
     bool delete_data(const char * userKey);
     bool getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, WiFiClient * c, int dev = 0);
