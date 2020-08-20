@@ -93,16 +93,12 @@ Ambient::clear(int field) {
 bool
 Ambient::send( uint32_t tmout ) {
     int retry;
-    uint32_t startTime = millis();
     for (retry = 0; retry < AMBIENT_MAX_RETRY; retry++) {
         int ret;
-        this->client->setTimeout( tmout );  // add timeout function.
-        ret = this->client->connect(this->host, this->port );
+        ret = this->client->connect(this->host, this->port, tmout);
         if (ret) {
             break ;
         }
-        else return false;
-//        if( (millis() - startTime) >= tmout ) return false;
     }
     if(retry == AMBIENT_MAX_RETRY) {
         ERR("Could not connect socket to host\r\n");
@@ -113,7 +109,7 @@ Ambient::send( uint32_t tmout ) {
     char body[192];
     char inChar;
 
-//    memset(body, 0, sizeof(body));
+    memset(body, 0, sizeof(body));
     strcat(body, "{\"writeKey\":\"");
     strcat(body, this->writeKey);
     strcat(body, "\",");
@@ -128,7 +124,7 @@ Ambient::send( uint32_t tmout ) {
     body[strlen(body) - 1] = '\0';
     strcat(body, "}\r\n");
 
-//    memset(str, 0, sizeof(str));
+    memset(str, 0, sizeof(str));
     sprintf(str, "POST /api/v2/channels/%d/data HTTP/1.1\r\n", this->channelId);
     if (this->port == 80) {
         sprintf(&str[strlen(str)], "Host: %s\r\n", this->host);
@@ -142,25 +138,21 @@ Ambient::send( uint32_t tmout ) {
 
     int ret;
     ret = this->client->print(str);
+    delay(30);
     DBG(ret);DBG(" bytes sent\n\n");
     if (ret == 0) {
         ERR("send failed\n");
         return false;
     }
-//    delay(30);
-
     ret = this->client->print(body);
+    delay(30);
     DBG(ret);DBG(" bytes sent\n\n");
     if (ret == 0) {
         ERR("send failed\n");
         return false;
     }
-//    delay(30);
 
-    startTime = millis();
-    while (this->client->available())
-    {
-        if( (millis() - timeBase) >= tmout ) break;
+    while (this->client->available()) {
         inChar = this->client->read();
 #if AMBIENT_DEBUG
         Serial.write(inChar);
