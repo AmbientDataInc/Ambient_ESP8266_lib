@@ -169,12 +169,12 @@ Ambient::send( uint32_t tmout ) {
 }
 
 int
-Ambient::bulk_send(char *buf) {
+Ambient::bulk_send(char *buf, uint32_t tmout) {
 
     int retry;
     for (retry = 0; retry < AMBIENT_MAX_RETRY; retry++) {
         int ret;
-        ret = this->client->connect(this->host, this->port);
+        ret = this->client->connect(this->host, this->port, tmout);
         if (ret) {
             break ;
         }
