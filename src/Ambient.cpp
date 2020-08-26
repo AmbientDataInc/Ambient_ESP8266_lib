@@ -95,7 +95,12 @@ Ambient::send( uint32_t tmout ) {
     int retry;
     for (retry = 0; retry < AMBIENT_MAX_RETRY; retry++) {
         int ret;
+#if defined(ESP8266)
+        this->client->setTimeout(tmout);
+        ret = this->client->connect(this->host, this->port);
+#else
         ret = this->client->connect(this->host, this->port, tmout);
+#endif
         if (ret) {
             break ;
         }
@@ -174,7 +179,12 @@ Ambient::bulk_send(char *buf, uint32_t tmout) {
     int retry;
     for (retry = 0; retry < AMBIENT_MAX_RETRY; retry++) {
         int ret;
+#if defined(ESP8266)
+        this->client->setTimeout(tmout);
+        ret = this->client->connect(this->host, this->port);
+#else
         ret = this->client->connect(this->host, this->port, tmout);
+#endif
         if (ret) {
             break ;
         }
