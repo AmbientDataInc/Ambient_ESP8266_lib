@@ -17,7 +17,7 @@
 // const char* AMBIENT_HOST = "54.65.206.59";
 const char* AMBIENT_HOST = "ambidata.io";
 int AMBIENT_PORT = 80;
-const char* AMBIENT_HOST_DEV = "192.168.11.7";
+const char* AMBIENT_HOST_DEV = "192.168.11.2";
 int AMBIENT_PORT_DEV = 4567;
 
 const char * ambient_keys[] = {"\"d1\":\"", "\"d2\":\"", "\"d3\":\"", "\"d4\":\"", "\"d5\":\"", "\"d6\":\"", "\"d7\":\"", "\"d8\":\"", "\"lat\":\"", "\"lng\":\"", "\"created\":\""};
@@ -51,6 +51,7 @@ Ambient::begin(unsigned int channelId, const char * writeKey, WiFiClient * c, in
     for (int i = 0; i < AMBIENT_NUM_PARAMS; i++) {
         this->data[i].set = false;
     }
+    this->cmnt.set = false;
     return true;
 }
 
@@ -86,6 +87,18 @@ Ambient::clear(int field) {
         return false;
     }
     this->data[field].set = false;
+    this->cmnt.set = false;
+
+    return true;
+}
+
+bool
+Ambient::setcmnt(const char * data) {
+    if (strlen(data) > AMBIENT_CMNT_SIZE) {
+        return false;
+    }
+    this->cmnt.set = true;
+    strcpy(this->cmnt.item, data);
 
     return true;
 }
@@ -125,6 +138,11 @@ Ambient::send( uint32_t tmout ) {
             strcat(body, this->data[i].item);
             strcat(body, "\",");
         }
+    }
+    if (this->cmnt.set) {
+        strcat(body, "\"cmnt\":\"");
+        strcat(body, this->cmnt.item);
+        strcat(body, "\",");
     }
     body[strlen(body) - 1] = '\0';
     strcat(body, "}\r\n");
@@ -169,6 +187,7 @@ Ambient::send( uint32_t tmout ) {
     for (int i = 0; i < AMBIENT_NUM_PARAMS; i++) {
         this->data[i].set = false;
     }
+    this->cmnt.set = false;
 
     return true;
 }
@@ -247,6 +266,7 @@ Ambient::bulk_send(char *buf, uint32_t tmout) {
     for (int i = 0; i < AMBIENT_NUM_PARAMS; i++) {
         this->data[i].set = false;
     }
+    this->cmnt.set = false;
 
     return (sent == 0) ? -1 : sent;
 }
@@ -301,6 +321,7 @@ Ambient::delete_data(const char * userKey) {
     for (int i = 0; i < AMBIENT_NUM_PARAMS; i++) {
         this->data[i].set = false;
     }
+    this->cmnt.set = false;
 
     return true;
 }

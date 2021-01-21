@@ -16,6 +16,7 @@
 #define AMBIENT_MAX_RETRY 5
 #define AMBIENT_DATA_SIZE 24
 #define AMBIENT_NUM_PARAMS 11
+#define AMBIENT_CMNT_SIZE 64
 #define AMBIENT_TIMEOUT 3000 // milliseconds
 
 class Ambient
@@ -29,11 +30,13 @@ public:
 	bool set(int field, double data);
 	bool set(int field, int data);
     bool clear(int field);
+    bool setcmnt(const char * cmnt);
 
     bool send( uint32_t tmout = 5000UL );
     int bulk_send(char * buf, uint32_t tmout = 5000UL);
     bool delete_data(const char * userKey);
     bool getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, WiFiClient * c, int dev = 0);
+    int status;
 
 private:
 
@@ -48,6 +51,10 @@ private:
         int set;
         char item[AMBIENT_DATA_SIZE];
     } data[AMBIENT_NUM_PARAMS];
+    struct {
+        int set;
+        char item[AMBIENT_CMNT_SIZE];
+    } cmnt;
 };
 
 #endif // Ambient_h
