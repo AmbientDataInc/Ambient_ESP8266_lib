@@ -4,6 +4,7 @@ set	KEYWORD2
 clear	KEYWORD2
 send	KEYWORD2
 bulk_send	KEYWORD2
+read	KEYWORD2
 delete_data	KEYWORD2
 getchannel	KEYWORD2
 setcmnt	KEYWORD2

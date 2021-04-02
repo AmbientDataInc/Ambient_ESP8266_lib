@@ -13,11 +13,12 @@
 #endif
 
 #define AMBIENT_WRITEKEY_SIZE 18
+#define AMBIENT_READKEY_SIZE 18
 #define AMBIENT_MAX_RETRY 5
 #define AMBIENT_DATA_SIZE 24
 #define AMBIENT_NUM_PARAMS 11
 #define AMBIENT_CMNT_SIZE 64
-#define AMBIENT_TIMEOUT 3000 // milliseconds
+#define AMBIENT_TIMEOUT 30000UL
 
 class Ambient
 {
@@ -25,17 +26,18 @@ public:
 
     Ambient(void);
 
-    bool begin(unsigned int channelId, const char * writeKey, WiFiClient * c, int dev = 0);
+    bool begin(unsigned int channelId, const char * writeKey, WiFiClient * c, const char * readKey = NULL, int dev = 0);
     bool set(int field,const char * data);
 	bool set(int field, double data);
 	bool set(int field, int data);
     bool clear(int field);
     bool setcmnt(const char * cmnt);
 
-    bool send( uint32_t tmout = 5000UL );
-    int bulk_send(char * buf, uint32_t tmout = 5000UL);
-    bool delete_data(const char * userKey);
-    bool getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, WiFiClient * c, int dev = 0);
+    bool send(uint32_t tmout = AMBIENT_TIMEOUT);
+    int bulk_send(char * buf, uint32_t tmout = AMBIENT_TIMEOUT);
+    bool read(char * buf, int len, int n = 1, uint32_t tmout = AMBIENT_TIMEOUT);
+    bool delete_data(const char * userKey, uint32_t tmout = AMBIENT_TIMEOUT);
+    bool getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, WiFiClient * c, uint32_t tmout = AMBIENT_TIMEOUT, int dev = 0);
     int status;
 
 private:
@@ -43,6 +45,7 @@ private:
     WiFiClient * client;
     unsigned int channelId;
     char writeKey[AMBIENT_WRITEKEY_SIZE];
+    char readKey[AMBIENT_READKEY_SIZE];
     int dev;
     char host[18];
     int port;
@@ -55,6 +58,8 @@ private:
         int set;
         char item[AMBIENT_CMNT_SIZE];
     } cmnt;
+    bool connect2host(uint32_t tmout = AMBIENT_TIMEOUT);
+    int getStatusCode(void);
 };
 
 #endif // Ambient_h

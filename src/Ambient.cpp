@@ -26,7 +26,7 @@ Ambient::Ambient() {
 }
 
 bool
-Ambient::begin(unsigned int channelId, const char * writeKey, WiFiClient * c, int dev) {
+Ambient::begin(unsigned int channelId, const char * writeKey, WiFiClient * c, const char * readKey, int dev) {
     this->channelId = channelId;
 
     if (sizeof(writeKey) > AMBIENT_WRITEKEY_SIZE) {
@@ -40,6 +40,11 @@ Ambient::begin(unsigned int channelId, const char * writeKey, WiFiClient * c, in
         return false;
     }
     this->client = c;
+    if (readKey != NULL) {
+        strcpy(this->readKey, readKey);
+    } else {
+        strcpy(this->readKey, "");
+    }
     this->dev = dev;
     if (dev) {
         strcpy(this->host, AMBIENT_HOST_DEV);
@@ -103,8 +108,7 @@ Ambient::setcmnt(const char * data) {
     return true;
 }
 
-bool
-Ambient::send( uint32_t tmout ) {
+bool Ambient::connect2host(uint32_t tmout) {
     int retry;
     for (retry = 0; retry < AMBIENT_MAX_RETRY; retry++) {
         int ret;
@@ -122,11 +126,28 @@ Ambient::send( uint32_t tmout ) {
         ERR("Could not connect socket to host\r\n");
         return false;
     }
+    return true;
+}
 
+int
+Ambient::getStatusCode() {
+    String _buf = this->client->readStringUntil('\n');
+    int from = _buf.indexOf("HTTP/1.1 ") + sizeof("HTTP/1.1 ") - 1;
+    int to = _buf.indexOf(' ', from);
+    this->status = _buf.substring(from, to).toInt();
+    return this->status;
+}
+
+bool
+Ambient::send(uint32_t tmout) {
     char str[180];
     char body[192];
     char inChar;
 
+    this->status = 0;
+    if (connect2host(tmout) == false) {
+        return false;
+    }
     memset(body, 0, sizeof(body));
     strcat(body, "{\"writeKey\":\"");
     strcat(body, this->writeKey);
@@ -175,6 +196,7 @@ Ambient::send( uint32_t tmout ) {
         return false;
     }
 
+    getStatusCode();
     while (this->client->available()) {
         inChar = this->client->read();
 #if AMBIENT_DEBUG
@@ -194,28 +216,13 @@ Ambient::send( uint32_t tmout ) {
 
 int
 Ambient::bulk_send(char *buf, uint32_t tmout) {
-
-    int retry;
-    for (retry = 0; retry < AMBIENT_MAX_RETRY; retry++) {
-        int ret;
-#if defined(ESP8266)
-        this->client->setTimeout(tmout);
-        ret = this->client->connect(this->host, this->port);
-#else
-        ret = this->client->connect(this->host, this->port, tmout);
-#endif
-        if (ret) {
-            break ;
-        }
-    }
-    if(retry == AMBIENT_MAX_RETRY) {
-        ERR("Could not connect socket to host\r\n");
-        return -1;
-    }
-
     char str[180];
     char inChar;
 
+    this->status = 0;
+    if (connect2host(tmout) == false) {
+        return false;
+    }
     memset(str, 0, sizeof(str));
     sprintf(str, "POST /api/v2/channels/%d/dataarray HTTP/1.1\r\n", this->channelId);
     if (this->port == 80) {
@@ -254,6 +261,7 @@ Ambient::bulk_send(char *buf, uint32_t tmout) {
     }
     delay(500);
 
+    getStatusCode();
     while (this->client->available()) {
         inChar = this->client->read();
 #if AMBIENT_DEBUG
@@ -272,23 +280,61 @@ Ambient::bulk_send(char *buf, uint32_t tmout) {
 }
 
 bool
-Ambient::delete_data(const char * userKey) {
-    int retry;
-    for (retry = 0; retry < AMBIENT_MAX_RETRY; retry++) {
-        int ret;
-        ret = this->client->connect(this->host, this->port);
-        if (ret) {
-            break ;
-        }
+Ambient::read(char * buf, int len, int n, uint32_t tmout) {
+    char str[180];
+    String _buf;
+
+    this->status = 0;
+    if (connect2host(tmout) == false) {
+        return false;
     }
-    if(retry == AMBIENT_MAX_RETRY) {
-        ERR("Could not connect socket to host\r\n");
+    memset(str, 0, sizeof(str));
+    sprintf(str, "GET /api/v2/channels/%d/data?readKey=%s&n=%d HTTP/1.1\r\n", this->channelId, this->readKey, n);
+    if (this->port == 80) {
+        sprintf(&str[strlen(str)], "Host: %s\r\n\r\n", this->host);
+    } else {
+        sprintf(&str[strlen(str)], "Host: %s:%d\r\n\r\n", this->host, this->port);
+    }
+
+    DBG("sending: ");DBG(strlen(str));DBG("bytes\r\n");DBG(str);
+
+    int ret;
+    ret = this->client->print(str);
+    delay(30);
+    DBG(ret);DBG(" bytes sent\n\n");
+    if (ret == 0) {
+        ERR("send failed\n");
         return false;
     }
 
+    if (getStatusCode() != 200) {  // ステータスコードが200でなければ
+        while (this->client->available()) {    // 残りを読み捨てる
+            this->client->readStringUntil('\n');
+        }
+        return false;
+    }
+    while (this->client->available()) {
+        _buf = this->client->readStringUntil('\n');
+        if (_buf.length() == 1)  // 空行を見つける
+            break;
+    }
+    _buf = this->client->readStringUntil('\n');
+    _buf.toCharArray(buf, len);
+
+    this->client->stop();
+
+    return true;
+}
+
+bool
+Ambient::delete_data(const char * userKey, uint32_t tmout) {
     char str[180];
     char inChar;
 
+    this->status = 0;
+    if (connect2host(tmout) == false) {
+        return false;
+    }
     memset(str, 0, sizeof(str));
     sprintf(str, "DELETE /api/v2/channels/%d/data?userKey=%s HTTP/1.1\r\n", this->channelId, userKey);
     if (this->port == 80) {
@@ -309,6 +355,7 @@ Ambient::delete_data(const char * userKey) {
         return false;
     }
 
+    getStatusCode();
     while (this->client->available()) {
         inChar = this->client->read();
 #if AMBIENT_DEBUG
@@ -327,7 +374,8 @@ Ambient::delete_data(const char * userKey) {
 }
 
 bool
-Ambient::getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, WiFiClient * c, int dev) {
+Ambient::getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, WiFiClient * c, uint32_t tmout, int dev) {
+    this->status = 0;
     if(NULL == c) {
         ERR("Socket Pointer is NULL, open a socket.");
         return false;
@@ -342,16 +390,7 @@ Ambient::getchannel(const char * userKey, const char * devKey, unsigned int & ch
         this->port = AMBIENT_PORT;
     }
 
-    int retry;
-    for (retry = 0; retry < AMBIENT_MAX_RETRY; retry++) {
-        int ret;
-        ret = this->client->connect(this->host, this->port);
-        if (ret) {
-            break ;
-        }
-    }
-    if(retry == AMBIENT_MAX_RETRY) {
-        ERR("Could not connect socket to host\r\n");
+    if (connect2host(tmout) == false) {
         return false;
     }
 
@@ -377,7 +416,7 @@ Ambient::getchannel(const char * userKey, const char * devKey, unsigned int & ch
         return false;
     }
 
-    if (! this->client->findUntil("200", "\n")) {
+    if (getStatusCode() != 200) {  // ステータスコードが200でなければ
         while (this->client->available()) {
             this->client->readStringUntil('\n');
         }
