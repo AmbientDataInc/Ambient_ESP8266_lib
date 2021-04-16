@@ -20,6 +20,17 @@
 #define AMBIENT_CMNT_SIZE 64
 #define AMBIENT_TIMEOUT 30000UL
 
+#define AM_BLACK 1
+#define AM_WHITE 8
+#define AM_RED 9
+#define AM_ORANGE 10
+#define AM_YELLOW 11
+#define AM_GREEN 12
+#define AM_CYAN 13
+#define AM_BLUE 14
+#define AM_PURPLE 15
+#define AM_PINK 16
+
 class Ambient
 {
 public:
