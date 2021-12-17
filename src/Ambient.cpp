@@ -169,7 +169,7 @@ Ambient::send(uint32_t tmout) {
     strcat(body, "}\r\n");
 
     memset(str, 0, sizeof(str));
-    sprintf(str, "POST /api/v2/channels/%d/data HTTP/1.1\r\n", this->channelId);
+    sprintf(str, "POST /api/v2/channels/%u/data HTTP/1.1\r\n", this->channelId);
     if (this->port == 80) {
         sprintf(&str[strlen(str)], "Host: %s\r\n", this->host);
     } else {
@@ -224,7 +224,7 @@ Ambient::bulk_send(char *buf, uint32_t tmout) {
         return false;
     }
     memset(str, 0, sizeof(str));
-    sprintf(str, "POST /api/v2/channels/%d/dataarray HTTP/1.1\r\n", this->channelId);
+    sprintf(str, "POST /api/v2/channels/%u/dataarray HTTP/1.1\r\n", this->channelId);
     if (this->port == 80) {
         sprintf(&str[strlen(str)], "Host: %s\r\n", this->host);
     } else {
@@ -289,7 +289,7 @@ Ambient::read(char * buf, int len, int n, uint32_t tmout) {
         return false;
     }
     memset(str, 0, sizeof(str));
-    sprintf(str, "GET /api/v2/channels/%d/data?readKey=%s&n=%d HTTP/1.1\r\n", this->channelId, this->readKey, n);
+    sprintf(str, "GET /api/v2/channels/%u/data?readKey=%s&n=%d HTTP/1.1\r\n", this->channelId, this->readKey, n);
     if (this->port == 80) {
         sprintf(&str[strlen(str)], "Host: %s\r\n\r\n", this->host);
     } else {
@@ -336,7 +336,7 @@ Ambient::delete_data(const char * userKey, uint32_t tmout) {
         return false;
     }
     memset(str, 0, sizeof(str));
-    sprintf(str, "DELETE /api/v2/channels/%d/data?userKey=%s HTTP/1.1\r\n", this->channelId, userKey);
+    sprintf(str, "DELETE /api/v2/channels/%u/data?userKey=%s HTTP/1.1\r\n", this->channelId, userKey);
     if (this->port == 80) {
         sprintf(&str[strlen(str)], "Host: %s\r\n", this->host);
     } else {
