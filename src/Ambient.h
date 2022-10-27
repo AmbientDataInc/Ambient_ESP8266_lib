@@ -60,6 +60,7 @@ private:
     int dev;
     char host[18];
     int port;
+    unsigned long lastsend;
 
     struct {
         int set;
