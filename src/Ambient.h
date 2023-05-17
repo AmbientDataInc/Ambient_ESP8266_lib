@@ -6,11 +6,7 @@
 #define Ambient_h
 
 #include "Arduino.h"
-#if defined(ESP8266)
- #include <ESP8266WiFi.h>
-#else
- #include <WiFi.h>
-#endif
+#include "Client.h"
 
 #define AMBIENT_WRITEKEY_SIZE 18
 #define AMBIENT_READKEY_SIZE 18
@@ -37,7 +33,7 @@ public:
 
     Ambient(void);
 
-    bool begin(unsigned int channelId, const char * writeKey, WiFiClient * c, const char * readKey = NULL, int dev = 0);
+    bool begin(unsigned int channelId, const char * writeKey, Client * c, const char * readKey = NULL, int dev = 0);
     bool set(int field,const char * data);
 	bool set(int field, double data);
 	bool set(int field, int data);
@@ -48,12 +44,12 @@ public:
     int bulk_send(char * buf, uint32_t tmout = AMBIENT_TIMEOUT);
     bool read(char * buf, int len, int n = 1, uint32_t tmout = AMBIENT_TIMEOUT);
     bool delete_data(const char * userKey, uint32_t tmout = AMBIENT_TIMEOUT);
-    bool getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, WiFiClient * c, uint32_t tmout = AMBIENT_TIMEOUT, int dev = 0);
+    bool getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, Client * c, uint32_t tmout = AMBIENT_TIMEOUT, int dev = 0);
     int status;
 
 private:
 
-    WiFiClient * client;
+    Client * client;
     unsigned int channelId;
     char writeKey[AMBIENT_WRITEKEY_SIZE];
     char readKey[AMBIENT_READKEY_SIZE];
