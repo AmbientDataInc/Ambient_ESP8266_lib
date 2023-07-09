@@ -26,7 +26,7 @@ Ambient::Ambient() {
 }
 
 bool
-Ambient::begin(unsigned int channelId, const char * writeKey, WiFiClient * c, const char * readKey, int dev) {
+Ambient::begin(unsigned int channelId, const char * writeKey, Client * c, const char * readKey, int dev) {
     this->channelId = channelId;
 
     if (sizeof(writeKey) > AMBIENT_WRITEKEY_SIZE) {
@@ -113,12 +113,8 @@ bool Ambient::connect2host(uint32_t tmout) {
     int retry;
     for (retry = 0; retry < AMBIENT_MAX_RETRY; retry++) {
         int ret;
-#if defined(ESP8266)
         this->client->setTimeout(tmout);
         ret = this->client->connect(this->host, this->port);
-#else
-        ret = this->client->connect(this->host, this->port, tmout);
-#endif
         if (ret) {
             break ;
         }
@@ -403,7 +399,7 @@ Ambient::delete_data(const char * userKey, uint32_t tmout) {
 }
 
 bool
-Ambient::getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, WiFiClient * c, uint32_t tmout, int dev) {
+Ambient::getchannel(const char * userKey, const char * devKey, unsigned int & channelId, char * writeKey, int len, Client * c, uint32_t tmout, int dev) {
     this->status = 0;
     if(NULL == c) {
         ERR("Socket Pointer is NULL, open a socket.");
