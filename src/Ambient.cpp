@@ -224,6 +224,8 @@ Ambient::send(uint32_t tmout) {
         inChar = this->client->read();
 #if AMBIENT_DEBUG
         Serial.write(inChar);
+#else
+        (void)inChar;
 #endif
     }
 
@@ -294,6 +296,8 @@ Ambient::bulk_send(char *buf, uint32_t tmout) {
         inChar = this->client->read();
 #if AMBIENT_DEBUG
         Serial.write(inChar);
+#else
+        (void)inChar;
 #endif
     }
 
@@ -389,6 +393,8 @@ Ambient::delete_data(const char * userKey, uint32_t tmout) {
         inChar = this->client->read();
 #if AMBIENT_DEBUG
         Serial.write(inChar);
+#else
+        (void)inChar;
 #endif
     }
 
@@ -424,7 +430,6 @@ Ambient::getchannel(const char * userKey, const char * devKey, unsigned int & ch
     }
 
     char str[1024];
-    char inChar;
 
     memset(str, 0, sizeof(str));
     sprintf(str, "GET /api/v2/channels/?userKey=%s&devKey=%s HTTP/1.1\r\n", userKey, devKey);
