@@ -432,7 +432,7 @@ Ambient::getchannel(const char * userKey, const char * devKey, unsigned int & ch
     char str[1024];
 
     memset(str, 0, sizeof(str));
-    sprintf(str, "GET /api/v2/channels/?userKey=%s&devKey=%s HTTP/1.1\r\n", userKey, devKey);
+    sprintf(str, "GET /api/v2/channels/?userKey=%s&devKey=%s&level=1 HTTP/1.1\r\n", userKey, devKey);
     if (this->port == 80) {
         sprintf(&str[strlen(str)], "Host: %s\r\n", this->host);
     } else {
